@@ -9,15 +9,20 @@ function loadTasks() {
         taskList.innerHTML = "";
         data.tasks.forEach(task => {
             const li = document.createElement("li");
+            li.className = "task-item";  // Add a class for styling
 
-            // Title, Description, Due Date
-            li.innerHTML = `
-                ${task.title} | 
-                ${task.description || 'No description'} | 
-                Due: ${task.due_date}
-            `;
+            // --- Left side (task info) ---
+            const taskContent = document.createElement("div");
+            taskContent.className = "task-content";
+            taskContent.textContent = `
+                ${task.title} | ${task.description || 'No description'} | Due: ${task.due_date}
+            `.trim();
 
-            // Create the status dropdown
+            // --- Right side (actions) ---
+            const taskActions = document.createElement("div");
+            taskActions.className = "task-actions";
+
+            // Status dropdown
             const statusSelect = document.createElement("select");
             ["Not Started", "In Progress", "Completed", "On Hold"].forEach(statusOption => {
                 const option = document.createElement("option");
@@ -28,34 +33,32 @@ function loadTasks() {
                 }
                 statusSelect.appendChild(option);
             });
-
-            // When status changes, update backend
             statusSelect.addEventListener('change', function() {
                 updateTaskStatus(task.id, statusSelect.value);
             });
 
-            li.appendChild(document.createTextNode(' | ')); // separator before status
-            li.appendChild(statusSelect);
-
-            // Create the edit button
+            // Edit button
             const editButton = document.createElement("button");
             editButton.textContent = "Edit";
             editButton.addEventListener('click', function() {
                 enterEditMode(task, li);
             });
 
-            li.appendChild(document.createTextNode(' ')); // small space
-            li.appendChild(editButton);
-
-            // Create the delete button
+            // Delete button
             const deleteButton = document.createElement("button");
             deleteButton.textContent = "Delete";
             deleteButton.addEventListener('click', function() {
                 deleteTask(task.id);
             });
 
-            li.appendChild(document.createTextNode(' ')); // small space
-            li.appendChild(deleteButton);
+            // Add all actions to the taskActions div
+            taskActions.appendChild(statusSelect);
+            taskActions.appendChild(editButton);
+            taskActions.appendChild(deleteButton);
+
+            // Add content and actions to li
+            li.appendChild(taskContent);
+            li.appendChild(taskActions);
 
             taskList.appendChild(li);
         });
@@ -66,21 +69,27 @@ function loadTasks() {
 // Enter edit mode
 function enterEditMode(task, li) {
     li.innerHTML = '';
+    li.className = "task-item"; // Keep the same style
+
+    const editContainer = document.createElement("div");
+    editContainer.className = "edit-container";
 
     // Title input
     const titleInput = document.createElement("input");
     titleInput.value = task.title;
+    titleInput.className = "edit-title";
 
-    // Description input
+    // Description input (wider)
     const descInput = document.createElement("input");
     descInput.value = task.description;
+    descInput.className = "edit-description";
 
     // Date selectors
     const yearSelect = document.createElement("select");
     const monthSelect = document.createElement("select");
     const daySelect = document.createElement("select");
 
-    // Helper function to populate year options
+    // Populate year options
     function populateYears() {
         const currentYear = new Date().getFullYear();
         for (let year = currentYear; year <= currentYear + 5; year++) {
@@ -94,7 +103,7 @@ function enterEditMode(task, li) {
         }
     }
 
-    // Helper function to populate month options
+    // Populate month options
     function populateMonths() {
         for (let month = 1; month <= 12; month++) {
             const option = document.createElement("option");
@@ -107,7 +116,7 @@ function enterEditMode(task, li) {
         }
     }
 
-    // Helper function to populate day options
+    // Populate day options
     function populateDays(year, month) {
         daySelect.innerHTML = '';
         const daysInMonth = new Date(year, month, 0).getDate();
@@ -122,17 +131,20 @@ function enterEditMode(task, li) {
         }
     }
 
-    // Update days if year or month changes
-    yearSelect.addEventListener('change', function() {
-        populateDays(parseInt(yearSelect.value), parseInt(monthSelect.value));
-    });
-    monthSelect.addEventListener('change', function() {
-        populateDays(parseInt(yearSelect.value), parseInt(monthSelect.value));
-    });
+    // React when year/month changes
+    yearSelect.addEventListener('change', () => populateDays(parseInt(yearSelect.value), parseInt(monthSelect.value)));
+    monthSelect.addEventListener('change', () => populateDays(parseInt(yearSelect.value), parseInt(monthSelect.value)));
 
     populateYears();
     populateMonths();
     populateDays(parseInt(task.due_date.split("-")[0]), parseInt(task.due_date.split("-")[1]));
+
+    // Date group (no gaps)
+    const dateGroup = document.createElement("div");
+    dateGroup.className = "date-group";
+    dateGroup.appendChild(yearSelect);
+    dateGroup.appendChild(monthSelect);
+    dateGroup.appendChild(daySelect);
 
     // Save button
     const saveButton = document.createElement("button");
@@ -142,13 +154,12 @@ function enterEditMode(task, li) {
         updateFullTask(task.id, titleInput.value, descInput.value, dueDate);
     });
 
-    // Append all to li
-    li.appendChild(titleInput);
-    li.appendChild(descInput);
-    li.appendChild(yearSelect);
-    li.appendChild(monthSelect);
-    li.appendChild(daySelect);
-    li.appendChild(saveButton);
+    editContainer.appendChild(titleInput);
+    editContainer.appendChild(descInput);
+    editContainer.appendChild(dateGroup);
+    editContainer.appendChild(saveButton);
+
+    li.appendChild(editContainer);
 }
 
 // Update the task information
