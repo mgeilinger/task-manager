@@ -4,7 +4,7 @@ from flask_cors import CORS
 
 # Create the Flask app instance
 app = Flask(__name__)
-CORS(app)  # Enable CORS
+CORS(app)
 
 # Set up the database URI for SQLAlchemy
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tasks.db'
@@ -18,10 +18,10 @@ class Task(db.Model):
     due_date = db.Column(db.String(100), nullable=False)
     status = db.Column(db.String(50), nullable=False)
 
-# Define the route for creating a task (POST request)
+# Create a task with a title, optional description, status, due date/time
 @app.route('/tasks', methods=['POST'])
 def create_task():
-    data = request.get_json()  # Get data sent in the request
+    data = request.get_json()
     if not data or not data.get('title') or not data.get('due_date') or not data.get('status'):
         return jsonify({"error": "Missing required fields"}), 400
     
@@ -36,12 +36,56 @@ def create_task():
     
     return jsonify({"message": "Task created successfully", "task": {"id": task.id, "title": task.title, "status": task.status}}), 201
 
-# Define the route for retrieving all tasks (GET request)
+# Retrieve all tasks
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
-    tasks = Task.query.all()  # Retrieve all tasks from the database
+    tasks = Task.query.all()
     tasks_list = [{"id": task.id, "title": task.title, "status": task.status} for task in tasks]
     return jsonify({"tasks": tasks_list})
+
+# Retrieve a task by ID
+@app.route('/tasks/<int:task_id>', methods=['GET'])
+def get_task(task_id):
+    task = Task.query.get(task_id)
+    if not task:
+        return jsonify({"error": "Task not found"}), 404
+
+    task_data = {
+        "id": task.id,
+        "title": task.title,
+        "description": task.description,
+        "due_date": task.due_date,
+        "status": task.status
+    }
+    return jsonify({"task": task_data})
+
+# Update the status of a task
+@app.route('/tasks/<int:task_id>', methods=['PUT'])
+def update_task_status(task_id):
+    task = Task.query.get(task_id)
+    if not task:
+        return jsonify({"error": "Task not found"}), 404
+
+    data = request.get_json()
+    if not data or 'status' not in data:
+        return jsonify({"error": "Missing status field"}), 400
+
+    task.status = data['status']
+    db.session.commit()
+
+    return jsonify({"message": "Task status updated", "task": {"id": task.id, "title": task.title, "status": task.status}})
+
+# Delete a task
+@app.route('/tasks/<int:task_id>', methods=['DELETE'])
+def delete_task(task_id):
+    task = Task.query.get(task_id)
+    if not task:
+        return jsonify({"error": "Task not found"}), 404
+
+    db.session.delete(task)
+    db.session.commit()
+
+    return jsonify({"message": "Task deleted successfully"})
 
 # Define a test route to verify the server is working
 @app.route('/test', methods=['GET'])
