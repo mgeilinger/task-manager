@@ -57,7 +57,7 @@ def get_tasks():
 # Retrieve a task by ID
 @app.route('/tasks/<int:task_id>', methods=['GET'])
 def get_task(task_id):
-    task = Task.query.get(task_id)
+    task = db.session.get(Task, task_id)
     if not task:
         return jsonify({"error": "Task not found"}), 404
 
@@ -73,7 +73,7 @@ def get_task(task_id):
 # Update the status of a task
 @app.route('/tasks/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
-    task = Task.query.get(task_id)
+    task = db.session.get(Task, task_id)
     if not task:
         return jsonify({"error": "Task not found"}), 404
 
@@ -101,7 +101,7 @@ def update_task(task_id):
 # Delete a task
 @app.route('/tasks/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
-    task = Task.query.get(task_id)
+    task = db.session.get(Task, task_id)
     if not task:
         return jsonify({"error": "Task not found"}), 404
 

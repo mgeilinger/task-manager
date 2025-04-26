@@ -67,24 +67,87 @@ function loadTasks() {
 function enterEditMode(task, li) {
     li.innerHTML = '';
 
+    // Title input
     const titleInput = document.createElement("input");
     titleInput.value = task.title;
 
+    // Description input
     const descInput = document.createElement("input");
     descInput.value = task.description;
 
-    const dueInput = document.createElement("input");
-    dueInput.value = task.due_date;
+    // Date selectors
+    const yearSelect = document.createElement("select");
+    const monthSelect = document.createElement("select");
+    const daySelect = document.createElement("select");
 
+    // Helper function to populate year options
+    function populateYears() {
+        const currentYear = new Date().getFullYear();
+        for (let year = currentYear; year <= currentYear + 5; year++) {
+            const option = document.createElement("option");
+            option.value = year;
+            option.textContent = year;
+            if (year === parseInt(task.due_date.split("-")[0])) {
+                option.selected = true;
+            }
+            yearSelect.appendChild(option);
+        }
+    }
+
+    // Helper function to populate month options
+    function populateMonths() {
+        for (let month = 1; month <= 12; month++) {
+            const option = document.createElement("option");
+            option.value = month.toString().padStart(2, '0');
+            option.textContent = month;
+            if (month === parseInt(task.due_date.split("-")[1])) {
+                option.selected = true;
+            }
+            monthSelect.appendChild(option);
+        }
+    }
+
+    // Helper function to populate day options
+    function populateDays(year, month) {
+        daySelect.innerHTML = '';
+        const daysInMonth = new Date(year, month, 0).getDate();
+        for (let day = 1; day <= daysInMonth; day++) {
+            const option = document.createElement("option");
+            option.value = day.toString().padStart(2, '0');
+            option.textContent = day;
+            if (day === parseInt(task.due_date.split("-")[2])) {
+                option.selected = true;
+            }
+            daySelect.appendChild(option);
+        }
+    }
+
+    // Update days if year or month changes
+    yearSelect.addEventListener('change', function() {
+        populateDays(parseInt(yearSelect.value), parseInt(monthSelect.value));
+    });
+    monthSelect.addEventListener('change', function() {
+        populateDays(parseInt(yearSelect.value), parseInt(monthSelect.value));
+    });
+
+    populateYears();
+    populateMonths();
+    populateDays(parseInt(task.due_date.split("-")[0]), parseInt(task.due_date.split("-")[1]));
+
+    // Save button
     const saveButton = document.createElement("button");
     saveButton.textContent = "Save";
     saveButton.addEventListener('click', function() {
-        updateFullTask(task.id, titleInput.value, descInput.value, dueInput.value);
+        const dueDate = `${yearSelect.value}-${monthSelect.value}-${daySelect.value}`;
+        updateFullTask(task.id, titleInput.value, descInput.value, dueDate);
     });
 
+    // Append all to li
     li.appendChild(titleInput);
     li.appendChild(descInput);
-    li.appendChild(dueInput);
+    li.appendChild(yearSelect);
+    li.appendChild(monthSelect);
+    li.appendChild(daySelect);
     li.appendChild(saveButton);
 }
 
