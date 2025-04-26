@@ -46,8 +46,8 @@ def get_tasks():
         {
             "id": task.id,
             "title": task.title,
-            "description": task.description,  # Include description
-            "due_date": task.due_date,        # Include due date
+            "description": task.description,
+            "due_date": task.due_date,
             "status": task.status
         }
         for task in tasks

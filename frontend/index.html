@@ -24,7 +24,15 @@
             <label for="day">Day:</label>
             <select id="day"></select>
          </div>
-        <input type="text" id="status" placeholder="Status">
+        <div id="status-selector">
+            <label for="status">Status:</label>
+            <select id="status">
+                <option value="Not Started">Not Started</option>
+                <option value="In Progress" selected>In Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="On Hold">On Hold</option>
+            </select>
+        </div>
         <button onclick="createTask()">Create Task</button>
     </div>
 
