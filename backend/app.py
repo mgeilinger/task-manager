@@ -23,7 +23,7 @@ class Task(db.Model):
 def create_task():
     data = request.get_json()
     print(f"Received data: {data}")  # Log received data
-    
+
     if not data or not data.get('title') or not data.get('due_date') or not data.get('status'):
         return jsonify({"error": "Missing required fields"}), 400
     
@@ -42,7 +42,16 @@ def create_task():
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
     tasks = Task.query.all()
-    tasks_list = [{"id": task.id, "title": task.title, "status": task.status} for task in tasks]
+    tasks_list = [
+        {
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,  # Include description
+            "due_date": task.due_date,        # Include due date
+            "status": task.status
+        }
+        for task in tasks
+    ]
     return jsonify({"tasks": tasks_list})
 
 # Retrieve a task by ID
