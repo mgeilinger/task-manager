@@ -10,20 +10,64 @@ function loadTasks() {
         data.tasks.forEach(task => {
             const li = document.createElement("li");
 
-            // Display title, status, description, and due date
-            li.textContent = `${task.title} - ${task.status} | Description: ${task.description || 'No description'} | Due Date: ${task.due_date} `;
+            // Title, Description, Due Date
+            li.innerHTML = `
+                ${task.title} | 
+                ${task.description || 'No description'} | 
+                Due: ${task.due_date}
+            `;
 
-            // Create Delete Button
+            // Create the status dropdown
+            const statusSelect = document.createElement("select");
+            ["Not Started", "In Progress", "Completed", "On Hold"].forEach(statusOption => {
+                const option = document.createElement("option");
+                option.value = statusOption;
+                option.textContent = statusOption;
+                if (task.status === statusOption) {
+                    option.selected = true;
+                }
+                statusSelect.appendChild(option);
+            });
+
+            // When status changes, update backend
+            statusSelect.addEventListener('change', function() {
+                updateTaskStatus(task.id, statusSelect.value);
+            });
+
+            li.appendChild(document.createTextNode(' | ')); // separator before status
+            li.appendChild(statusSelect);
+
+            // Create the delete button
             const deleteButton = document.createElement("button");
             deleteButton.textContent = "Delete";
-            deleteButton.style.marginLeft = "10px";
-            deleteButton.onclick = () => deleteTask(task.id);
+            deleteButton.addEventListener('click', function() {
+                deleteTask(task.id);
+            });
 
+            li.appendChild(document.createTextNode(' ')); // small space
             li.appendChild(deleteButton);
+
             taskList.appendChild(li);
         });
     })
     .catch(error => console.error("Error fetching tasks:", error));
+}
+
+// Update task status
+function updateTaskStatus(taskId, newStatus) {
+    fetch(`${apiUrl}/tasks/${taskId}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => {
+        if (!response.ok) {
+            console.error("Failed to update task status");
+        }
+    })
+    .catch(error => console.error("Error updating task status:", error));
 }
 
 // Create a new task
