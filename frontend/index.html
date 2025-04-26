@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Task Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>Task Manager</h1>
+
+    <div id="task-form">
+        <h2>Create a New Task</h2>
+        <input type="text" id="title" placeholder="Title">
+        <input type="text" id="description" placeholder="Description (optional)">
+        <!-- <input type="text" id="dueDate" placeholder="Due Date (e.g., 2025-05-01T12:00:00)"> -->
+         <div id="date-selector">
+            <label for="year">Year:</label>
+            <select id="year"></select>
+
+            <label for="month">Month:</label>
+            <select id="month"></select>
+
+            <label for="day">Day:</label>
+            <select id="day"></select>
+         </div>
+        <input type="text" id="status" placeholder="Status">
+        <button onclick="createTask()">Create Task</button>
+    </div>
+
+    <hr>
+
+    <div id="tasks">
+        <h2>Tasks</h2>
+        <ul id="taskList"></ul>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

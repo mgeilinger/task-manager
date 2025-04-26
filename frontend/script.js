@@ -1,0 +1,112 @@
+const apiUrl = "http://127.0.0.1:5000";  // Flask backend
+
+// Fetch all tasks and display them
+function loadTasks() {
+    fetch(`${apiUrl}/tasks`)
+    .then(response => response.json())
+    .then(data => {
+        const taskList = document.getElementById("taskList");
+        taskList.innerHTML = "";
+        data.tasks.forEach(task => {
+            const li = document.createElement("li");
+
+            // Display title, status, description, and due date
+            li.textContent = `${task.title} - ${task.status} | Description: ${task.description || 'No description'} | Due Date: ${task.due_date}`;
+
+            taskList.appendChild(li);
+        });
+    })
+    .catch(error => console.error("Error fetching tasks:", error));
+}
+
+// Create a new task
+function createTask() {
+    const title = document.getElementById("title").value;
+    const description = document.getElementById("description").value;
+    const year = document.getElementById("year").value;
+    const month = document.getElementById("month").value;
+    const day = document.getElementById("day").value;
+    const dueDate = `${year}-${month}-${day}`;  // Combine date information into YYYY-MM-DD format
+    const status = document.getElementById("status").value;
+    
+    console.log("Sending task data:", { title, description, due_date: dueDate, status });  // Log the data being sent
+
+    fetch(`${apiUrl}/tasks`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            title,
+            description,
+            due_date: dueDate,
+            status
+        })
+    })
+    .then(response => {
+        if (response.ok) {
+            loadTasks();
+        } else {
+            console.error("Failed to create task");
+        }
+    })
+    .catch(error => console.error("Error creating task:", error));
+}
+
+// Date selector
+document.addEventListener('DOMContentLoaded', function() {
+    const yearSelect = document.getElementById('year');
+    const monthSelect = document.getElementById('month');
+    const daySelect = document.getElementById('day');
+
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth() + 1; // 0-indexed
+    const currentDay = today.getDate();
+
+    // Populate years (you can customize range)
+    for (let year = currentYear; year <= currentYear + 5; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        if (year === currentYear) option.selected = true;
+        yearSelect.appendChild(option);
+    }
+
+    // Populate months
+    for (let month = 1; month <= 12; month++) {
+        const option = document.createElement('option');
+        option.value = month.toString().padStart(2, '0'); // '01', '02', etc.
+        option.textContent = month;
+        if (month === currentMonth) option.selected = true;
+        monthSelect.appendChild(option);
+    }
+
+    // Populate days
+    function populateDays(year, month) {
+        daySelect.innerHTML = ''; // Clear previous days
+        const daysInMonth = new Date(year, month, 0).getDate(); // Get number of days
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const option = document.createElement('option');
+            option.value = day.toString().padStart(2, '0');
+            option.textContent = day;
+            if (day === currentDay) option.selected = true;
+            daySelect.appendChild(option);
+        }
+    }
+
+    // Initially populate days
+    populateDays(currentYear, currentMonth);
+
+    // Update days when year or month changes
+    yearSelect.addEventListener('change', function() {
+        populateDays(parseInt(yearSelect.value), parseInt(monthSelect.value));
+    });
+    monthSelect.addEventListener('change', function() {
+        populateDays(parseInt(yearSelect.value), parseInt(monthSelect.value));
+    });
+});
+
+// Load tasks when page first loads
+document.addEventListener("DOMContentLoaded", loadTasks);

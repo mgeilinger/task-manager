@@ -22,6 +22,8 @@ class Task(db.Model):
 @app.route('/tasks', methods=['POST'])
 def create_task():
     data = request.get_json()
+    print(f"Received data: {data}")  # Log received data
+    
     if not data or not data.get('title') or not data.get('due_date') or not data.get('status'):
         return jsonify({"error": "Missing required fields"}), 400
     
