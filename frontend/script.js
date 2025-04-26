@@ -11,8 +11,15 @@ function loadTasks() {
             const li = document.createElement("li");
 
             // Display title, status, description, and due date
-            li.textContent = `${task.title} - ${task.status} | Description: ${task.description || 'No description'} | Due Date: ${task.due_date}`;
+            li.textContent = `${task.title} - ${task.status} | Description: ${task.description || 'No description'} | Due Date: ${task.due_date} `;
 
+            // Create Delete Button
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "Delete";
+            deleteButton.style.marginLeft = "10px";
+            deleteButton.onclick = () => deleteTask(task.id);
+
+            li.appendChild(deleteButton);
             taskList.appendChild(li);
         });
     })
@@ -51,6 +58,25 @@ function createTask() {
         }
     })
     .catch(error => console.error("Error creating task:", error));
+}
+
+// Delete a task
+function deleteTask(taskId) {
+    if (!confirm("Are you sure you want to delete this task?")) {
+        return;
+    }
+
+    fetch(`${apiUrl}/tasks/${taskId}`, {
+        method: "DELETE",
+    })
+    .then(response => {
+        if (response.ok) {
+            loadTasks(); // Refresh the list after deletion
+        } else {
+            console.error("Failed to delete task");
+        }
+    })
+    .catch(error => console.error("Error deleting task:", error));
 }
 
 // Date selector
