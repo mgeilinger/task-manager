@@ -72,19 +72,31 @@ def get_task(task_id):
 
 # Update the status of a task
 @app.route('/tasks/<int:task_id>', methods=['PUT'])
-def update_task_status(task_id):
+def update_task(task_id):
     task = Task.query.get(task_id)
     if not task:
         return jsonify({"error": "Task not found"}), 404
 
     data = request.get_json()
-    if not data or 'status' not in data:
-        return jsonify({"error": "Missing status field"}), 400
 
-    task.status = data['status']
+    if 'title' in data:
+        task.title = data['title']
+    if 'description' in data:
+        task.description = data['description']
+    if 'due_date' in data:
+        task.due_date = data['due_date']
+    if 'status' in data:
+        task.status = data['status']
+
     db.session.commit()
 
-    return jsonify({"message": "Task status updated", "task": {"id": task.id, "title": task.title, "status": task.status}})
+    return jsonify({"message": "Task updated successfully", "task": {
+        "id": task.id,
+        "title": task.title,
+        "description": task.description,
+        "due_date": task.due_date,
+        "status": task.status
+    }})
 
 # Delete a task
 @app.route('/tasks/<int:task_id>', methods=['DELETE'])

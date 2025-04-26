@@ -37,6 +37,16 @@ function loadTasks() {
             li.appendChild(document.createTextNode(' | ')); // separator before status
             li.appendChild(statusSelect);
 
+            // Create the edit button
+            const editButton = document.createElement("button");
+            editButton.textContent = "Edit";
+            editButton.addEventListener('click', function() {
+                enterEditMode(task, li);
+            });
+
+            li.appendChild(document.createTextNode(' ')); // small space
+            li.appendChild(editButton);
+
             // Create the delete button
             const deleteButton = document.createElement("button");
             deleteButton.textContent = "Delete";
@@ -51,6 +61,54 @@ function loadTasks() {
         });
     })
     .catch(error => console.error("Error fetching tasks:", error));
+}
+
+// Enter edit mode
+function enterEditMode(task, li) {
+    li.innerHTML = '';
+
+    const titleInput = document.createElement("input");
+    titleInput.value = task.title;
+
+    const descInput = document.createElement("input");
+    descInput.value = task.description;
+
+    const dueInput = document.createElement("input");
+    dueInput.value = task.due_date;
+
+    const saveButton = document.createElement("button");
+    saveButton.textContent = "Save";
+    saveButton.addEventListener('click', function() {
+        updateFullTask(task.id, titleInput.value, descInput.value, dueInput.value);
+    });
+
+    li.appendChild(titleInput);
+    li.appendChild(descInput);
+    li.appendChild(dueInput);
+    li.appendChild(saveButton);
+}
+
+// Update the task information
+function updateFullTask(taskId, newTitle, newDescription, newDueDate) {
+    fetch(`${apiUrl}/tasks/${taskId}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            title: newTitle,
+            description: newDescription,
+            due_date: newDueDate
+        })
+    })
+    .then(response => {
+        if (response.ok) {
+            loadTasks(); // Reload the tasks
+        } else {
+            console.error("Failed to update task details");
+        }
+    })
+    .catch(error => console.error("Error updating task details:", error));
 }
 
 // Update task status
